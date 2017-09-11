@@ -12,12 +12,34 @@ public class CommandParser {
         if (args.length == 0) {
             throw new InvalidCommandException("URL Missing from arguments");
         }
-
-        String url = args[0].trim();
-        String location = DEFAULT_LOCATION;
-        if (args.length > 1) {
-            location = args[1].trim();
+        
+        int i = 0;
+        int throttle = 0;
+        int bufferSize = 0;
+        
+        while (true) {
+	        if (args[i].equals("-t")) {
+	        	throttle = Integer.parseInt(args[i+1]);
+	        	i += 2;
+	        	continue;
+	        }
+	        
+	        if (args[i].equals("-b")) {
+	        	bufferSize = Integer.parseInt(args[i+1]);
+	        	i += 2;
+	        	continue;
+	        }
+	        
+	        break;
         }
-        return new Command(url, location);
+
+        String url = args[i].trim();                       
+        String location = DEFAULT_LOCATION;
+        i++;
+        
+        if (args.length > i) {
+            location = args[i].trim();
+        }
+        return new Command(url, location, throttle, bufferSize);
     }
 }

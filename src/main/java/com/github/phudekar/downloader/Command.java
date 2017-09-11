@@ -4,11 +4,15 @@ public class Command {
 
     private String url;
     private String location;
+    private int throttleMs = 0;
+    private int bufferSize = 0;
 
-    public Command(String url, String location) {
+    public Command(String url, String location, int throttleMs, int bufferSize) {
 
         this.url = url;
         this.location = location;
+        this.throttleMs = throttleMs;
+        this.bufferSize = bufferSize;
     }
 
     public String getUrl() {
@@ -18,4 +22,20 @@ public class Command {
     public String getLocation() {
         return location;
     }
+
+	public int getThrottleMs() {
+		return throttleMs;
+	}
+
+	public void setThrottleMs(int throttleMs) {
+		this.throttleMs = throttleMs;
+	}
+
+	public int getBufferSize() {
+		return bufferSize;
+	}
+
+	public void setBufferSize(int bufferSize) {
+		this.bufferSize = bufferSize;
+	}
 }

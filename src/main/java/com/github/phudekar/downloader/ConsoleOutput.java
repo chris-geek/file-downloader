@@ -8,7 +8,7 @@ public class ConsoleOutput implements ProgressListener {
     public void onProgress(DownloadEntry entry) {
         if (entry.getStatus().isComplete()) {
             printProgress(entry);
-            System.out.println("\nFile downloaded successfully at " + entry.getLocation());
+            System.out.println("\nFile downloaded successfully at " + entry.getFile().getAbsolutePath());
         } else {
             printProgress(entry);
         }

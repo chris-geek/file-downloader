@@ -2,6 +2,7 @@ package com.github.phudekar.downloader;
 
 import com.github.phudekar.downloader.exceptions.InvalidUrlException;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,16 +14,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class HttpDownloader implements Downloader {
-    private static final int BUFFER_SIZE = 4096;
-
-    private List<ProgressListener> progressListeners = new ArrayList<>();
+    private int bufferSize = 4096;
+    private int throttleChunksMs = 0;
+	private List<ProgressListener> progressListeners = new ArrayList<>();
 
     @Override
     public void download(DownloadEntry entry) {
         try {
             HttpURLConnection connection = (HttpURLConnection) new URL(entry.getUrl()).openConnection();
             long totalBytesRead = entry.getFile().length();
-            connection.setRequestProperty("Range", getRangeHeader(totalBytesRead));
+            String rangeHeader = getRangeHeader(totalBytesRead);
+			connection.setRequestProperty("Range", rangeHeader);
 
             int responseCode = connection.getResponseCode();
             if (responseCode == HttpURLConnection.HTTP_OK || responseCode == HttpURLConnection.HTTP_PARTIAL) {
@@ -31,17 +33,28 @@ public class HttpDownloader implements Downloader {
                 InputStream inputStream = connection.getInputStream();
                 FileOutputStream outputStream = new FileOutputStream(entry.getFile(), true);
 
-                byte[] buffer = new byte[BUFFER_SIZE];
+                byte[] buffer = new byte[bufferSize];
                 int bytesRead = 0;
                 while ((bytesRead = inputStream.read(buffer)) > -1 && !Thread.currentThread().isInterrupted()) {
                     outputStream.write(buffer, 0, bytesRead);
                     outputStream.flush();
                     totalBytesRead += bytesRead;
                     this.notifyProgress(entry, totalBytesRead, totalSize);
+                    
+                    if (this.throttleChunksMs > 0) {
+                    	try {
+							Thread.sleep(this.throttleChunksMs);
+						} catch (InterruptedException e) {
+							System.out.println("INTERRUPTED");
+						}
+                    }
                 }
 
                 connection.disconnect();
                 outputStream.close();
+                
+                entry.renamePartialToCompleteDownload();
+                
             } else {
                 throw new ConnectException("Could not connect. status code : " + responseCode);
             }
@@ -64,4 +77,21 @@ public class HttpDownloader implements Downloader {
     public void subscribeForNotification(ProgressListener progressListener) {
         this.progressListeners.add(progressListener);
     }
+    
+    public int getBufferSize() {
+		return bufferSize;
+	}
+
+	public void setBufferSize(int bufferSize) {
+		this.bufferSize = bufferSize;
+	}
+	
+	public int getThrottleChunksMs() {
+		return throttleChunksMs;
+	}
+
+	public void setThrottleChunksMs(int throttleChunksMs) {
+		this.throttleChunksMs = throttleChunksMs;
+	}
+
 }

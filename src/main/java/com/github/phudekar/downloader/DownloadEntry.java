@@ -7,7 +7,8 @@ import java.util.Optional;
 
 public class DownloadEntry {
 
-    static final String DEFAULT_FILE_NAME = "download";
+    private static final String PARTIAL_DOWNLOAD_SUFFIX = ".part";
+	static final String DEFAULT_FILE_NAME = "download";
     private final String url;
     private String location;
     private final File file;
@@ -16,12 +17,20 @@ public class DownloadEntry {
     public DownloadEntry(String url, String location) {
         this.url = url;
         this.location = location;
-        if (new File(location).isDirectory()) {
-            this.location = location + File.separator + getFileName(url);
-        }
-        this.file = new File(this.location + ".tmp");
+        File locationFile = new File(location);
+        
+		if (locationFile.isDirectory()) {
+			this.location = locationFile.getAbsolutePath();
+            this.location = locationFile + File.separator + getFileName(url);
+        }		
+		
+        this.file = new File(this.location + PARTIAL_DOWNLOAD_SUFFIX);        
     }
-
+    
+    public void renamePartialToCompleteDownload() {
+    	this.file.renameTo(new File(this.location));
+    }
+    
     private String getFileName(String url) {
         Optional<String> fileName = FileNameParser.getFileName(url);
         return fileName.isPresent() ? fileName.get() : DEFAULT_FILE_NAME;
@@ -37,7 +46,7 @@ public class DownloadEntry {
 
     public String getLocation() {
         return location;
-    }
+    }    
 
     public DownloadStatus getStatus() {
         return status;
