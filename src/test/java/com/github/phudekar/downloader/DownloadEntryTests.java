@@ -5,6 +5,8 @@ import org.junit.Test;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import java.io.File;
+
 public class DownloadEntryTests {
 
     @Test
@@ -14,7 +16,7 @@ public class DownloadEntryTests {
 
         DownloadEntry downloadEntry = new DownloadEntry(url, location);
 
-        assertThat(downloadEntry.getFile().getPath(), is(location + "/" + DownloadEntry.DEFAULT_FILE_NAME + ".tmp"));
+        assertThat(downloadEntry.getFile().getPath(), is(location + File.separatorChar + DownloadEntry.DEFAULT_FILE_NAME + DownloadEntry.PARTIAL_DOWNLOAD_SUFFIX));
     }
 
 

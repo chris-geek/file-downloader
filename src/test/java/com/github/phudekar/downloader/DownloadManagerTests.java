@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import java.io.File;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -38,7 +39,7 @@ public class DownloadManagerTests {
         downloadManager.download(downloadEntry);
 
         assertThat(downloadEntry.getUrl(), is(url));
-        assertThat(downloadEntry.getFile().getPath(), is(location + "/" + fileName + ".tmp"));
+        assertThat(downloadEntry.getFile().getPath(), is(location + File.separatorChar + fileName + DownloadEntry.PARTIAL_DOWNLOAD_SUFFIX));
     }
 
     @Test
