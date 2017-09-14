@@ -1,14 +1,16 @@
 package com.github.phudekar.downloader;
 
+import java.io.File;
+
 public class ConsoleOutput implements ProgressListener {
 
     private StringBuilder messageBuilder = new StringBuilder();
 
     @Override
     public void onProgress(DownloadEntry entry) {
+    	
         if (entry.getStatus().isComplete()) {
-            printProgress(entry);
-            System.out.println("\nFile downloaded successfully at " + entry.getFile().getAbsolutePath());
+            printProgress(entry);            
         } else {
             printProgress(entry);
         }
@@ -32,7 +34,7 @@ public class ConsoleOutput implements ProgressListener {
 
         messageBuilder.append("] ");
         messageBuilder.append(Math.round(status.getDownloadedSize() / 1024) + "/" + Math.round(status.getTotalSize() / 1024) + " KB ");
-        messageBuilder.append("Enter '" + ConsoleInput.PAUSE + "' to pause ");
+        messageBuilder.append("Enter '" + ConsoleInput.PAUSE + "' to pause or '"+ ConsoleInput.QUIT +"' to stop and resume running again");
 
         System.out.print(messageBuilder.toString());
     }

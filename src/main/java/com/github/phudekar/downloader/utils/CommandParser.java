@@ -10,12 +10,13 @@ public class CommandParser {
 
     public Command parse(String[] args) throws InvalidCommandException {
         if (args.length == 0) {
-            throw new InvalidCommandException("URL Missing from arguments");
+            throw new InvalidCommandException("usage: [-b <bufferSize>] [-t <throttleTimeMs>] [-md5 {<md5hash> | etag}] <url>");
         }
         
         int i = 0;
         int throttle = 0;
         int bufferSize = 0;
+        String md5 = null;
         
         while (true) {
 	        if (args[i].equals("-t")) {
@@ -30,6 +31,12 @@ public class CommandParser {
 	        	continue;
 	        }
 	        
+	        if (args[i].equals("-md5")) {
+	        	md5 = args[i+1];
+	        	i += 2;
+	        	continue;
+	        }
+	        
 	        break;
         }
 
@@ -40,6 +47,6 @@ public class CommandParser {
         if (args.length > i) {
             location = args[i].trim();
         }
-        return new Command(url, location, throttle, bufferSize);
+        return new Command(url, location, throttle, bufferSize, md5);
     }
 }

@@ -5,7 +5,8 @@ public class DownloadStatus {
     private long totalSize;
     private long downloadedSize;
 
-    public DownloadStatus(long totalSize, long downloadedSize) {
+
+	public DownloadStatus(long totalSize, long downloadedSize) {
         this.totalSize = totalSize;
         this.downloadedSize = downloadedSize;
     }
@@ -21,4 +22,5 @@ public class DownloadStatus {
     public boolean isComplete() {
         return getTotalSize() > 0 && getDownloadedSize() >= getTotalSize();
     }
+    
 }

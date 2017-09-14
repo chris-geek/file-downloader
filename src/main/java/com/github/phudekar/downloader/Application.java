@@ -30,11 +30,18 @@ public class Application {
             	System.out.println("Buffer size: "+ command.getBufferSize());
             	downloader.setBufferSize(command.getBufferSize());
             }
+            
 
             ExecutorService executor = Executors.newCachedThreadPool();
             DownloadManager downloadManager = new DownloadManager(downloader, executor);
 
             DownloadEntry entry = new DownloadEntry(command.getUrl(), command.getLocation());
+            
+            if (command.getMd5() != null) {
+            	System.out.println("MD5: "+ command.getMd5());
+            	entry.setFileMd5(command.getMd5());
+            }
+            
             downloadManager.download(entry);
             input.listenForCommands(entry, downloadManager, () -> {
                 if (!executor.isShutdown()) executor.shutdownNow();
