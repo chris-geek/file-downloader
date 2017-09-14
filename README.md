@@ -46,7 +46,6 @@ cd file-downloader-1.0-SNAPSHOT/bin/
 
 ## Run the application
 
-```
-./file-downloader [-md5 {<md5hash> | etag] [-b <bufferSizeBytes>] [-t <throttleMs>]  "<http-url>" <location>
 
-```
+    ./file-downloader [-md5 {<md5hash> | etag}] [ -b <bufferSizeBytes>] [ -t <throttleMs>]  "<http-url>" <location>
+
