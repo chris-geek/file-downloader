@@ -1,7 +1,7 @@
 File Downloader
 ===============
 
-<!-- [![Build Status](https://travis-ci.org/phudekar/file-downloader.svg?branch=master)](https://travis-ci.org/phudekar/file-downloader) -->
+[![Build Status](https://travis-ci.org/chris-geek/file-downloader.svg?branch=master)](https://travis-ci.org/chris-geek/file-downloader)
 
 This is a derivative work of https://github.com/phudekar/file-downloader.
 The goal is to create a file download library with the following features:
