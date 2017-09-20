@@ -18,13 +18,16 @@ public class ConsoleOutput implements ProgressListener {
 
     private void printProgress(DownloadEntry entry) {
         DownloadStatus status = entry.getStatus();
+        
         for (int i = 0; i < messageBuilder.length() + 5; i++) {
             System.out.print("\b");
         }
+        
         messageBuilder = new StringBuilder();
         messageBuilder.append("[");
 
         int progressBarWidth = 20;
+        
         for (int i = 1; i <= progressBarWidth; i++) {
             if (status.getDownloadedSize() * progressBarWidth / status.getTotalSize() >= i)
                 messageBuilder.append("=");
@@ -38,6 +41,18 @@ public class ConsoleOutput implements ProgressListener {
 
         System.out.print(messageBuilder.toString());
     }
+
+	@Override
+	public void onError(String msg) {
+		System.out.println("onError:"+msg);
+		
+	}
+
+	@Override
+	public void onCompleted() {
+		System.out.println("onCompleted!");
+		
+	}
 
 
 }

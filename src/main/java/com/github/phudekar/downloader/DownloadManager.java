@@ -1,5 +1,6 @@
 package com.github.phudekar.downloader;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -20,7 +21,7 @@ public class DownloadManager {
 
     public void download(DownloadEntry entry) {
         if (!downloads.containsKey(entry))
-            downloads.put(entry, executor.submit(() -> downloader.download(entry)));
+            downloads.put(entry, executor.submit(() -> { downloader.download(entry); }));
     }
 
     public Set<DownloadEntry> getDownloads() {

@@ -13,7 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import com.github.phudekar.downloader.exceptions.EtagNotFoundException;
 import com.github.phudekar.downloader.exceptions.InvalidUrlException;
+import com.github.phudekar.downloader.exceptions.UnexpectedResponseException;
 import com.github.phudekar.downloader.utils.IntegrityChecker;
 
 public class HttpDownloader implements Downloader {
@@ -22,26 +24,57 @@ public class HttpDownloader implements Downloader {
 	private List<ProgressListener> progressListeners = new ArrayList<>();
 	
 	private final static Logger log = Logger.getLogger(HttpDownloader.class.getName());
-
+	
     @Override
-    public void download(DownloadEntry entry) {
+    public void download(DownloadEntry entry)  {
         try {
-            HttpURLConnection connection = (HttpURLConnection) new URL(entry.getUrl()).openConnection();
-            long totalBytesRead = entry.getFile().length();
-            String rangeHeader = getRangeHeader(totalBytesRead);
-			connection.setRequestProperty("Range", rangeHeader);		
+            downloadFromUrl(entry, entry.getUrl());
+        } catch (UnexpectedResponseException e) {
+            if (e.getResponseCode() == 302 || e.getResponseCode() == 301) {
+                try {
+                    log.info("Received 302. Trying again with " + e.getLocation());
+                    downloadFromUrl(entry, e.getLocation());
+                } catch (UnexpectedResponseException e1) {
+                    this.notifyError("Could not download file from : " + e.getLocation());
+                } catch (NoSuchAlgorithmException e1) {
+                	this.notifyError("NoSuchAlgorithmException: " + e.getMessage());
+				} catch (EtagNotFoundException e1) {
+					this.notifyError("EtagNotFoundException: " + e.getMessage());
+				} catch (IOException e1) {
+					this.notifyError("IOException: " + e.getMessage());
+				}
+            } else {
+            	this.notifyError("Could not download file. Received respose code: " + e.getResponseCode());
+            }
+        } catch (NoSuchAlgorithmException e) {
+			this.notifyError("NoSuchAlgorithmException: " + e.getMessage());
+		} catch (EtagNotFoundException e) {
+			this.notifyError("EtagNotFoundException: " + e.getMessage());
+		} catch (IOException e) {
+			this.notifyError("IOException: " + e.getMessage());
+		}
+    }
 
+    
+    
+    private void downloadFromUrl(DownloadEntry entry, String url) throws UnexpectedResponseException, IOException, NoSuchAlgorithmException, EtagNotFoundException {
+        HttpURLConnection connection = null;
+        FileOutputStream outputStream = null;
+
+        try {
+            connection = (HttpURLConnection) new URL(url).openConnection();
+            long totalBytesRead = entry.getFile().length();
+            connection.setRequestProperty("Range", getRangeHeader(totalBytesRead));
             int responseCode = connection.getResponseCode();
             if (responseCode == HttpURLConnection.HTTP_OK || responseCode == HttpURLConnection.HTTP_PARTIAL) {
-            	
+
             	if (entry.getFileMd5() != null && entry.getFileMd5().equalsIgnoreCase("etag")) {
             		getMd5FromEtag(entry, connection);
             	}
             	
                 long totalSize = totalBytesRead + connection.getContentLengthLong();
                 InputStream inputStream = connection.getInputStream();
-                FileOutputStream outputStream = new FileOutputStream(entry.getFile(), true);
-
+                outputStream = new FileOutputStream(entry.getFile(), true);
                 byte[] buffer = new byte[bufferSize];
                 int bytesRead = 0;
                 
@@ -61,6 +94,7 @@ public class HttpDownloader implements Downloader {
                 }
                 
                 connection.disconnect();
+                connection = null;
                 outputStream.close();
                 // Needed to rename the file to remove the .part suffix
                 this.notifyProgress(entry, totalBytesRead, totalSize);
@@ -72,36 +106,41 @@ public class HttpDownloader implements Downloader {
                 	String fileMd5 = new IntegrityChecker().getFileMd5(entry.getLocation());
                 	
                 	if (!entry.getFileMd5().equalsIgnoreCase(fileMd5)) {
-                		throw new StreamCorruptedException("Downloaded and provided MD5 do not match ("+ fileMd5.toUpperCase() + ", "+ entry.getFileMd5().toUpperCase());
+                		throw new StreamCorruptedException("Downloaded and provided MD5 do not match ("+ fileMd5.toUpperCase() + ", "+ entry.getFileMd5().toUpperCase());                		
                 	} else {
                 		log.info("MD5 signature is OK");
                 	}
+                	
+                	this.notifyCompleted();
                 }
                                 
-            	entry.setDownloadCompletedOrSuspended(true);                
-                
+            	entry.setDownloadCompletedOrSuspended(true);            	
+
             } else {
-                throw new ConnectException("Could not connect. status code : " + responseCode);
-            }
+                throw new UnexpectedResponseException(responseCode, connection.getHeaderField("Location"));
+            }                	
         } catch (MalformedURLException e) {
             throw new InvalidUrlException(entry.getUrl());
         } catch (IOException e) {
-        	// TODO
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-			// TODO
-			e.printStackTrace();
-		} catch (Exception e) {
-			// TODO
-			e.printStackTrace();
-		}
+            throw e;
+        } finally {
+            if (connection != null)
+                connection.disconnect();
+
+            if (outputStream != null)
+                try {
+                    outputStream.close();
+                } catch (IOException e) {
+                	log.info(e.getMessage());
+                }
+        }
     }
 
-	private void getMd5FromEtag(DownloadEntry entry, HttpURLConnection connection) throws Exception {
+	private void getMd5FromEtag(DownloadEntry entry, HttpURLConnection connection) throws EtagNotFoundException  {
 		String etag = connection.getHeaderField("ETag");
 		
 		if (etag == null) {
-			throw new Exception("Missing ETag header field");
+			throw new EtagNotFoundException();
 		} else if (etag.startsWith("\"")) {		// eg. AWS S3/CloudFront return the MD5 value in double quotes 
 			etag = etag.substring(1, etag.length()-1);
 		}
@@ -116,6 +155,14 @@ public class HttpDownloader implements Downloader {
     private void notifyProgress(DownloadEntry entry, long sizeDownloaded, long totalSize) {
         entry.updateStatus(new DownloadStatus(totalSize, sizeDownloaded));
         this.progressListeners.stream().forEach(progressListener -> progressListener.onProgress(entry));
+    }
+    
+    private void notifyError(String msg) {
+    	this.progressListeners.stream().forEach(progressListener -> progressListener.onError(msg));
+    }
+    
+    private void notifyCompleted() {
+    	this.progressListeners.stream().forEach(progressListener -> progressListener.onCompleted());
     }
 
     public void subscribeForNotification(ProgressListener progressListener) {
