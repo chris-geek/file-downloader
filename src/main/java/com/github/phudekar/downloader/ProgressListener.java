@@ -2,10 +2,10 @@ package com.github.phudekar.downloader;
 
 public interface ProgressListener {
 
-    void onProgress(DownloadEntry entry);
+    default void onProgress(DownloadEntry entry) {}
     
-    void onError(String msg);
+    default void onError(String msg) {}
     
-    void onCompleted();
+    default void onCompleted() {}
 
 }

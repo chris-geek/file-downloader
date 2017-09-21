@@ -31,6 +31,7 @@ public class HttpDownloader implements Downloader {
             downloadFromUrl(entry, entry.getUrl());
         } catch (UnexpectedResponseException e) {
             if (e.getResponseCode() == 302 || e.getResponseCode() == 301) {
+            	// received a moved permanently or temporary redirect. e.getLocation() contains the new URL. We try again.
                 try {
                     log.info("Received 302. Trying again with " + e.getLocation());
                     downloadFromUrl(entry, e.getLocation());
