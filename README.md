@@ -9,6 +9,7 @@ The goal is to create a file download library with the following features:
 - ability to resume interrupted downloads
 - optional MD5 integrity checking of the downloaded file, including support for MD5-ETags, such as AWS CloudFront/S3 
 - bandwidth throttling
+- optional auto-retry mode to manage interrupted connections 
 
 The library comes with a simple command line utility to download a file from a url. 
 You can pause the active download by entering `p` and resume it by entering `r`.

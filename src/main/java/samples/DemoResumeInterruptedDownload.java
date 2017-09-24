@@ -23,7 +23,7 @@ import java.util.concurrent.Executors;
  * Alternatively, set SHUTDOWN_AFTER_MS to a lower time.
  *
  */
-public class Application2 {
+public class DemoResumeInterruptedDownload {
 	private static long SHUTDOWN_AFTER_MS = 3000;
 
     public static void main(String[] args) {

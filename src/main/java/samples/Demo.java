@@ -17,7 +17,7 @@ import com.github.phudekar.downloader.utils.CommandParser;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class Application {
+public class Demo {
 
     public static void main(String[] args) {
 
