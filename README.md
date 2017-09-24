@@ -48,5 +48,5 @@ cd file-downloader-1.0-SNAPSHOT/bin/
 ## Run the example application
 
     cd bin
-    java samples.Application [-md5 {<md5hash> | etag}] [ -b <bufferSizeBytes>] [ -t <throttleMs>]  "<http-url>" <location>
+    java samples.Demo [-md5 {<md5hash> | etag}] [ -b <bufferSizeBytes>] [ -t <throttleMs>]  "<http-url>" <location>
     
