@@ -1,3 +1,8 @@
+/**
+ * This file is released under the MIT license (https://opensource.org/licenses/MIT)
+ * as defined in the file 'LICENSE', which is part of this source code package.
+ */
+
 package com.github.phudekar.downloader;
 
 import java.io.FileOutputStream;
@@ -22,42 +27,55 @@ public class HttpDownloader implements Downloader {
     private int bufferSize = 4096;
     private int throttleChunksMs = 0;
 	private List<ProgressListener> progressListeners = new ArrayList<>();
+	private DownloadAutoRetryConfig autoRetryConfig = null;
 	
 	private final static Logger log = Logger.getLogger(HttpDownloader.class.getName());
 	
     @Override
     public void download(DownloadEntry entry)  {
-        try {
-            downloadFromUrl(entry, entry.getUrl());
-        } catch (UnexpectedResponseException e) {
-            if (e.getResponseCode() == 302 || e.getResponseCode() == 301) {
-            	// received a moved permanently or temporary redirect. e.getLocation() contains the new URL. We try again.
-                try {
-                    log.info("Received 302. Trying again with " + e.getLocation());
-                    downloadFromUrl(entry, e.getLocation());
-                } catch (UnexpectedResponseException e1) {
-                    this.notifyError("Could not download file from : " + e.getLocation());
-                } catch (NoSuchAlgorithmException e1) {
-                	this.notifyError("NoSuchAlgorithmException: " + e.getMessage());
-				} catch (EtagNotFoundException e1) {
-					this.notifyError("EtagNotFoundException: " + e.getMessage());
-				} catch (IOException e1) {
-					this.notifyError("IOException: " + e.getMessage());
-				}
-            } else {
-            	this.notifyError("Could not download file. Received respose code: " + e.getResponseCode());
-            }
-        } catch (NoSuchAlgorithmException e) {
-			this.notifyError("NoSuchAlgorithmException: " + e.getMessage());
-		} catch (EtagNotFoundException e) {
-			this.notifyError("EtagNotFoundException: " + e.getMessage());
-		} catch (IOException e) {
-			this.notifyError("IOException: " + e.getMessage());
-		}
+    	boolean retryDownload;
+    	
+    	do {
+    		retryDownload = false;
+    		
+	        try {
+	            downloadFromUrl(entry, entry.getUrl());
+	        } catch (UnexpectedResponseException e) {
+	            if (e.getResponseCode() == 302 || e.getResponseCode() == 301) {
+	            	// received a moved permanently or temporary redirect. e.getLocation() contains the new URL. We try again.
+	                try {
+	                    log.info("Received 302. Trying again with " + e.getLocation());
+	                    downloadFromUrl(entry, e.getLocation());
+	                } catch (UnexpectedResponseException e1) {
+	                    this.notifyError("Could not download file from : " + e.getLocation());
+	                } catch (NoSuchAlgorithmException | EtagNotFoundException e1) {
+	                	this.notifyError(e1.getClass().getSimpleName() + ": " + e.getMessage());                	
+					} catch (IOException ex) {
+						this.notifyError(e.getClass().getSimpleName() + ": " + e.getMessage());
+	    				retryDownload = this.shouldRetryDownload();
+	    			}
+	            } else {
+	            	this.notifyError("Could not download file. Received respose code: " + e.getResponseCode());
+	            }
+	        } catch (NoSuchAlgorithmException | EtagNotFoundException e) {
+	        	this.notifyError(e.getClass().getSimpleName() + ": " + e.getMessage());
+			} catch (IOException e) {
+				this.notifyError(e.getClass().getSimpleName() + ": " + e.getMessage());
+				retryDownload = this.shouldRetryDownload();
+			}
+    	} while (retryDownload);
     }
 
     
-    
+    /**
+     * 
+     * @param entry
+     * @param url
+     * @throws UnexpectedResponseException
+     * @throws IOException
+     * @throws NoSuchAlgorithmException
+     * @throws EtagNotFoundException
+     */
     private void downloadFromUrl(DownloadEntry entry, String url) throws UnexpectedResponseException, IOException, NoSuchAlgorithmException, EtagNotFoundException {
         HttpURLConnection connection = null;
         FileOutputStream outputStream = null;
@@ -67,6 +85,7 @@ public class HttpDownloader implements Downloader {
             long totalBytesRead = entry.getFile().length();
             connection.setRequestProperty("Range", getRangeHeader(totalBytesRead));
             int responseCode = connection.getResponseCode();
+            
             if (responseCode == HttpURLConnection.HTTP_OK || responseCode == HttpURLConnection.HTTP_PARTIAL) {
 
             	if (entry.getFileMd5() != null && entry.getFileMd5().equalsIgnoreCase("etag")) {
@@ -78,6 +97,7 @@ public class HttpDownloader implements Downloader {
                 outputStream = new FileOutputStream(entry.getFile(), true);
                 byte[] buffer = new byte[bufferSize];
                 int bytesRead = 0;
+                this.resetAutoRetryCounter();
                 
                 while ((bytesRead = inputStream.read(buffer)) > -1 && !Thread.currentThread().isInterrupted() && !entry.isForceStop()) {
                     outputStream.write(buffer, 0, bytesRead);
@@ -137,6 +157,12 @@ public class HttpDownloader implements Downloader {
         }
     }
 
+    /**
+     * 
+     * @param entry
+     * @param connection
+     * @throws EtagNotFoundException
+     */
 	private void getMd5FromEtag(DownloadEntry entry, HttpURLConnection connection) throws EtagNotFoundException  {
 		String etag = connection.getHeaderField("ETag");
 		
@@ -165,6 +191,14 @@ public class HttpDownloader implements Downloader {
     private void notifyCompleted() {
     	this.progressListeners.stream().forEach(progressListener -> progressListener.onCompleted());
     }
+    
+    private void notifySleepBeforeAutoRetry(long millisec) {
+    	this.progressListeners.stream().forEach(progressListener -> progressListener.onSleepBeforeAutoRetry(millisec));
+    }
+    
+    private void notifyOnAutoRetryAttempt() {
+    	this.progressListeners.stream().forEach(progressListener -> progressListener.onAutoRetryAttempt());
+    }
 
     public void subscribeForNotification(ProgressListener progressListener) {
         this.progressListeners.add(progressListener);
@@ -186,4 +220,44 @@ public class HttpDownloader implements Downloader {
 		this.throttleChunksMs = throttleChunksMs;
 	}
 
+
+	public DownloadAutoRetryConfig getAutoRetryConfig() {
+		return autoRetryConfig;
+	}
+
+	public void setAutoRetryConfig(DownloadAutoRetryConfig autoRetryConfig) {
+		this.autoRetryConfig = autoRetryConfig;
+	}
+	
+	/**
+	 * If auto-retry has been enabled, sleeps and returns true.
+	 * The sleep time is calculated by the DownloadAutoRetryConfig class according to its configuration.
+	 * 
+	 * @return true if auto-retry has been enabled
+	 */
+	protected boolean shouldRetryDownload() {
+		if (this.autoRetryConfig != null) {
+			try {
+				long delayTimeMs = this.autoRetryConfig.calculateCurrentDelayTime();
+				this.notifySleepBeforeAutoRetry(delayTimeMs);
+				Thread.sleep(delayTimeMs); 
+			} catch (InterruptedException e) {
+				return false;
+			}			
+			this.notifyOnAutoRetryAttempt();
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * Invoked once the download has been resumed so that, in case of another connection failure,
+	 * the retry delay starts from the initial value again.
+	 */
+	protected void resetAutoRetryCounter() {
+		if (this.autoRetryConfig != null) {
+			this.autoRetryConfig.resetAutoRetryCounter();
+		}
+	}
 }

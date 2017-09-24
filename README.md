@@ -32,7 +32,7 @@ gradle build
 
 ```
 
-This will create a distributable bundle of the application.
+This will create a distributable bundle of the application under `build/libs`.
 
 ### Extract the bundle
 

@@ -1,6 +1,9 @@
-package com.github.phudekar.downloader;
+/**
+ * This file is released under the MIT license (https://opensource.org/licenses/MIT)
+ * as defined in the file 'LICENSE', which is part of this source code package.
+ */
 
-import java.io.File;
+package com.github.phudekar.downloader;
 
 public class ConsoleOutput implements ProgressListener {
 
@@ -50,9 +53,18 @@ public class ConsoleOutput implements ProgressListener {
 
 	@Override
 	public void onCompleted() {
-		System.out.println("onCompleted!");
-		
+		System.out.println("onCompleted!");	
 	}
 
+	@Override
+	public void onSleepBeforeAutoRetry(long millisec) {
+		System.out.println("Auto-Retry: sleeping (ms) " + millisec);
+	}
 
+	@Override
+	public void onAutoRetryAttempt() {
+		System.out.println("Auto-Retry: resuming connection");
+	}
+
+	
 }

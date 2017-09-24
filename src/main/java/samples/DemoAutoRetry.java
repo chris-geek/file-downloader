@@ -8,6 +8,7 @@ package samples;
 import com.github.phudekar.downloader.Command;
 import com.github.phudekar.downloader.ConsoleInput;
 import com.github.phudekar.downloader.ConsoleOutput;
+import com.github.phudekar.downloader.DownloadAutoRetryConfig;
 import com.github.phudekar.downloader.DownloadEntry;
 import com.github.phudekar.downloader.HttpDownloader;
 import com.github.phudekar.downloader.exceptions.InvalidCommandException;
@@ -17,20 +18,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * This class is an example of download that can be completely stopped and resumed at the next run. 
- * Aborts the download after 3 seconds.
- * Run this class multiple times passing a URL that takes more than 3 seconds to download.
- * Alternatively, set SHUTDOWN_AFTER_MS to a lower time.
+ * This class shows how to setup the auto-retry feature. 
  *
  */
-public class Application2 {
-	private static long SHUTDOWN_AFTER_MS = 3000;
+public class DemoAutoRetry {
 
     public static void main(String[] args) {
 
         HttpDownloader downloader = new HttpDownloader();        
         CommandParser commandParser = new CommandParser();
-        ConsoleOutput output = new ConsoleOutput();       
+        ConsoleOutput output = new ConsoleOutput();
 
         downloader.subscribeForNotification(output);
 
@@ -53,22 +50,20 @@ public class Application2 {
             if (command.getMd5() != null) {
             	System.out.println("MD5: "+ command.getMd5());
             	entry.setFileMd5(command.getMd5());
-            }            
+            }
+
+            DownloadAutoRetryConfig autoRetryConfig = new DownloadAutoRetryConfig();
+            autoRetryConfig.setMaxDelayTimeMs(60000);
+            autoRetryConfig.setRetryDelayExponent(2);
+            downloader.setAutoRetryConfig(autoRetryConfig);
             
-            Thread thread = new Thread(() -> {
-            	downloader.download(entry);
-            });
-			thread.start();
-			
-			try { Thread.sleep(SHUTDOWN_AFTER_MS); } catch (InterruptedException e) { e.printStackTrace(); }
-			entry.setForceStop(true);			
-			thread.join();
+            System.out.println("Starting download. Disconnect and reconnect your network cable during download to test auto-retry");
+            
+        	downloader.download(entry);
 			
         } catch (InvalidCommandException e) {
             System.out.println("Error: " + e.getMessage());
-        } catch (InterruptedException e) {
-			e.printStackTrace();
-		} 
+        }
     }
 
 }

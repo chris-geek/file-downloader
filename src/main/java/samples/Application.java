@@ -1,3 +1,8 @@
+/**
+ * This file is released under the MIT license (https://opensource.org/licenses/MIT)
+ * as defined in the file 'LICENSE', which is part of this source code package.
+ */
+
 package samples;
 
 import com.github.phudekar.downloader.Command;

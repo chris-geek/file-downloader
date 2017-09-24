@@ -1,6 +1,10 @@
+/**
+ * This file is released under the MIT license (https://opensource.org/licenses/MIT)
+ * as defined in the file 'LICENSE', which is part of this source code package.
+ */
+
 package com.github.phudekar.downloader.utils;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
