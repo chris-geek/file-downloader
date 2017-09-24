@@ -66,5 +66,10 @@ public class ConsoleOutput implements ProgressListener {
 		System.out.println("Auto-Retry: resuming connection");
 	}
 
+	@Override
+	public void onReachedMaxRetryAttempts() {
+		System.out.println("Auto-Retry: reached max retry attempts");
+	}
+
 	
 }

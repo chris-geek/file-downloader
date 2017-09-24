@@ -199,6 +199,11 @@ public class HttpDownloader implements Downloader {
     private void notifyOnAutoRetryAttempt() {
     	this.progressListeners.stream().forEach(progressListener -> progressListener.onAutoRetryAttempt());
     }
+    
+	private void notifyReachedMaxAutoRetryAttempts() {
+		this.progressListeners.stream().forEach(progressListener -> progressListener.onReachedMaxRetryAttempts());		
+	}
+
 
     public void subscribeForNotification(ProgressListener progressListener) {
         this.progressListeners.add(progressListener);
@@ -237,6 +242,11 @@ public class HttpDownloader implements Downloader {
 	 */
 	protected boolean shouldRetryDownload() {
 		if (this.autoRetryConfig != null) {
+			if (this.autoRetryConfig.hasReachedMaxRetryAttempts()) {
+				this.notifyReachedMaxAutoRetryAttempts();
+				return false;
+			}
+			
 			try {
 				long delayTimeMs = this.autoRetryConfig.calculateCurrentDelayTime();
 				this.notifySleepBeforeAutoRetry(delayTimeMs);

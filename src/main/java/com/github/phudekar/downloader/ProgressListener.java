@@ -17,4 +17,6 @@ public interface ProgressListener {
     
     default void onAutoRetryAttempt() {}
 
+	default void onReachedMaxRetryAttempts() {}
+
 }

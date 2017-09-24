@@ -53,8 +53,12 @@ public class DemoAutoRetry {
             }
 
             DownloadAutoRetryConfig autoRetryConfig = new DownloadAutoRetryConfig();
-            autoRetryConfig.setMaxDelayTimeMs(60000);
-            autoRetryConfig.setRetryDelayExponent(2);
+            autoRetryConfig.setInitialDelayTimeMs(1000);
+            autoRetryConfig.setDelayTimeIncrementsMs(1000);
+            autoRetryConfig.setMaxDelayTimeMs(60000);            
+            autoRetryConfig.setRetryDelayExponent(2);            
+            autoRetryConfig.setMaxRetryAttempts(100);
+            
             downloader.setAutoRetryConfig(autoRetryConfig);
             
             System.out.println("Starting download. Disconnect and reconnect your network cable during download to test auto-retry");

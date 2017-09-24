@@ -13,17 +13,26 @@ public class DownloadAutoRetryConfig {
 	private int delayTimeIncrementsMs = 1000; // default
 	private int currentRetryCount = 0;
 	private float retryDelayExponent = 1.0F; // default
+	private int maxRetryAttempts = 0; // default (0 = unlimited)
 	
 	private final static Logger log = Logger.getLogger(HttpDownloader.class.getName());
 	
 	public DownloadAutoRetryConfig() {		
 	}
 	
-	public DownloadAutoRetryConfig(long initialDelayTimeMillisec, long maxDelayTimeMillisec, int delayTimeIncrementsMillsec, float retryIncrementFactor) {
+	public DownloadAutoRetryConfig(long initialDelayTimeMillisec, long maxDelayTimeMillisec, int delayTimeIncrementsMillsec, float retryDelayExponent) {
 		this.initialDelayTimeMs = initialDelayTimeMillisec;
 		this.maxDelayTimeMs = maxDelayTimeMillisec;
 		this.delayTimeIncrementsMs = delayTimeIncrementsMillsec;
-		this.retryDelayExponent = retryIncrementFactor;
+		this.retryDelayExponent = retryDelayExponent;
+	}
+	
+	protected boolean hasReachedMaxRetryAttempts() {
+		if (this.maxRetryAttempts == 0) {
+			return false;
+		} else {
+			return this.currentRetryCount >= this.maxRetryAttempts;
+		}
 	}
 	
 	protected long calculateCurrentDelayTime() {
@@ -70,6 +79,14 @@ public class DownloadAutoRetryConfig {
 
 	public void setRetryDelayExponent(float retryIncrementFactor) {
 		this.retryDelayExponent = retryIncrementFactor;
+	}
+
+	public int getMaxRetryAttempts() {
+		return maxRetryAttempts;
+	}
+
+	public void setMaxRetryAttempts(int maxRetryAttempts) {
+		this.maxRetryAttempts = maxRetryAttempts;
 	}
 	
 }
