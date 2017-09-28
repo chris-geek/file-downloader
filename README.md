@@ -89,9 +89,9 @@ configuration as follows:
 
     DownloadAutoRetryConfig autoRetryConfig = new DownloadAutoRetryConfig();
     
-    autoRetryConfig.setInitialDelayTimeMs(1000);    // default is 1000
-    autoRetryConfig.setDelayTimeIncrementsMs(1000); // default is 1000
-    autoRetryConfig.setMaxDelayTimeMs(60000);       // default is 1000            
+    autoRetryConfig.setInitialDelayTimeMs(2000);    // default is 1000
+    autoRetryConfig.setDelayTimeIncrementsMs(1500); // default is 1000
+    autoRetryConfig.setMaxDelayTimeMs(120000);      // default is 60000            
     autoRetryConfig.setRetryDelayExponent(2);       // default is 1     
     autoRetryConfig.setMaxRetryAttempts(100);       // default is 0 = unlimited
     
