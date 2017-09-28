@@ -9,7 +9,8 @@ The goal is to create a file download library with the following features:
 - ability to resume interrupted downloads
 - optional MD5 integrity checking of the downloaded file, including support for MD5-ETags, such as AWS CloudFront/S3 
 - bandwidth throttling
-- optional auto-retry mode to manage interrupted connections 
+- optional auto-retry mode to manage interrupted connections
+- correctly handle HTTP 301/302 status codes (moved permanently or temporary redirects) 
 
 The library comes with a simple command line utility to download a file from a url. 
 You can pause the active download by entering `p` and resume it by entering `r`.
@@ -51,13 +52,14 @@ cd file-downloader-1.0-SNAPSHOT/bin/
     
 ## Using as a library
 
+You can download the latest jar from the Releases tab on GitHub and add file-download-<version>.jar to your classpath.
 The simplest way to use file downloader is the following:
 
     HttpDownloader downloader = new HttpDownloader();
-    DownloadEntry entry = new DownloadEntry("http://it.apache.contactlab.it//httpd/httpd-2.4.27.tar.gz", "/tmp");
+    DownloadEntry entry = new DownloadEntry("http://www-us.apache.org/dist//httpd/httpd-2.2.34.tar.gz", "/tmp");
     downloader.download(entry);
     
-In the above example we provide a HTTP(s) URL (http://it.apache.contactlab.it//httpd/httpd-2.4.27.tar.gz) and
+In the above example we provide a HTTP(s) URL (http://www-us.apache.org/dist//httpd/httpd-2.2.34.tar.gz) and
 a local path. The local path can be either a directory or file. If it is a directory, the original file name will
 be used for the downloaded file.
 
@@ -119,7 +121,7 @@ check for file integrity:
 You can control the download bandwidth through two settings on the `HttpDownloader` instance:
    
     HttpDownloader downloader = new HttpDownloader();
-    DownloadEntry entry = new DownloadEntry("http://it.apache.contactlab.it//httpd/httpd-2.4.27.tar.gz", "/tmp");
+    DownloadEntry entry = new DownloadEntry("http://www-us.apache.org/dist//httpd/httpd-2.2.34.tar.gz", "/tmp");
     downloader.setBufferSize(256);
     downloader.setThrottleChunksMs(500);
     downloader.download(entry);
@@ -127,4 +129,9 @@ You can control the download bandwidth through two settings on the `HttpDownload
 In the above example, we have set the download buffer size to 256 bytes (instead of the default, 4096 bytes) and
 set a delay of 500 milliseconds for every downloaded buffer.
 If you are downloading large files, you might consider using a larger buffer.
+
+### Other
+
+The downloader will always overwrite the local file. Thus, it is responsibility of the client application to check,
+before downloading, that there is not another file with the same name on the local disk.
 
