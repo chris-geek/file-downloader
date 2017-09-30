@@ -24,7 +24,7 @@ import com.github.phudekar.downloader.exceptions.UnexpectedResponseException;
 import com.github.phudekar.downloader.utils.IntegrityChecker;
 
 public class HttpDownloader implements Downloader {
-    private int bufferSize = 4096;
+    private int bufferSize = 16384;
     private int throttleChunksMs = 0;
 	private List<ProgressListener> progressListeners = new ArrayList<>();
 	private DownloadAutoRetryConfig autoRetryConfig = null;

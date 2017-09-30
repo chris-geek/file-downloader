@@ -35,6 +35,9 @@ gradle build
 ```
 
 This will create a distributable bundle of the application under `build/libs`.
+Moreover, it will generate a jar file `build/distributions/file-downloader-lib-*.*-SNAPSHOT.jar`.
+This jar file does not include the sample application, thus it is suitable to be added to your
+project in order to use file-downloader as an external library.
 
 ### Extract the bundle
 
@@ -49,10 +52,19 @@ cd file-downloader-1.0-SNAPSHOT/bin/
 
     cd bin
     java samples.Demo [-md5 {<md5hash> | etag}] [ -b <bufferSizeBytes>] [ -t <throttleMs>]  "<http-url>" <location>
+    java samples.DemoAutoRetry [-md5 {<md5hash> | etag}] [ -b <bufferSizeBytes>] [ -t <throttleMs>]  "<http-url>" <location>
+
+`samples.DemoAutoRetry` shows the auto-retry feature. You can download a large file and temporary disable you network card
+or disconnecting the network cable/turning wifi off.
+
+`samples.DemoResumeInterruptedDownload` shows how the download is resumed if the application exists during download.
+By default it will exit after 3 seconds, but you can edit the source code and use a different time.  
+
+Feel free to hack the demo applications to test different features.
     
 ## Using as a library
 
-You can download the latest jar from the Releases tab on GitHub and add file-download-<version>.jar to your classpath.
+You can download the latest jar from the Releases tab on GitHub and add `file-download-lib-<version>.jar` to your classpath.
 The simplest way to use file downloader is the following:
 
     HttpDownloader downloader = new HttpDownloader();

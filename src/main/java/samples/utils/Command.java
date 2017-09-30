@@ -3,7 +3,7 @@
  * as defined in the file 'LICENSE', which is part of this source code package.
  */
 
-package com.github.phudekar.downloader;
+package samples.utils;
 
 public class Command {
 

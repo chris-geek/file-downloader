@@ -1,10 +1,10 @@
 group 'com.github.phudekar'
-version '1.0-SNAPSHOT'
+version '1.1-SNAPSHOT'
 
 apply plugin: 'java'
 apply plugin: 'application'
 
-mainClassName = 'com.github.phudekar.downloader.Application'
+mainClassName = 'samples.Demo'
 
 jar {
     manifest {
@@ -13,10 +13,20 @@ jar {
 }
 
 if (!hasProperty('mainClass')) {
-    ext.mainClass = 'com.github.phudekar.downloader.Application'
+    ext.mainClass = 'samples.Demo'
 }
 
 sourceCompatibility = 1.8
+
+task libJar(type: Jar) {
+    baseName = baseName + "-lib"
+    from(sourceSets.main.output) {        
+        exclude "samples/**"
+    }
+}
+
+
+build.dependsOn(['libJar'])
 
 repositories {
     mavenCentral()

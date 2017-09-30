@@ -5,14 +5,15 @@
 
 package samples;
 
-import com.github.phudekar.downloader.Command;
-import com.github.phudekar.downloader.ConsoleInput;
-import com.github.phudekar.downloader.ConsoleOutput;
 import com.github.phudekar.downloader.DownloadEntry;
 import com.github.phudekar.downloader.DownloadManager;
 import com.github.phudekar.downloader.HttpDownloader;
 import com.github.phudekar.downloader.exceptions.InvalidCommandException;
 import com.github.phudekar.downloader.utils.CommandParser;
+
+import samples.utils.Command;
+import samples.utils.ConsoleInput;
+import samples.utils.ConsoleOutput;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

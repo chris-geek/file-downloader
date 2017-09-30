@@ -3,7 +3,11 @@
  * as defined in the file 'LICENSE', which is part of this source code package.
  */
 
-package com.github.phudekar.downloader;
+package samples.utils;
+
+import com.github.phudekar.downloader.DownloadEntry;
+import com.github.phudekar.downloader.DownloadStatus;
+import com.github.phudekar.downloader.ProgressListener;
 
 public class ConsoleOutput implements ProgressListener {
 

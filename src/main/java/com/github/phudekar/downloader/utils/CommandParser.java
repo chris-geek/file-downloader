@@ -5,8 +5,9 @@
 
 package com.github.phudekar.downloader.utils;
 
-import com.github.phudekar.downloader.Command;
 import com.github.phudekar.downloader.exceptions.InvalidCommandException;
+
+import samples.utils.Command;
 
 public class CommandParser {
 

@@ -18,7 +18,7 @@ public class DownloadManagerTests {
 
     final String fileName = "README.md";
     String url = "https://raw.githubusercontent.com/phudekar/file-downloader/master/" + fileName;
-    final String location = ".";
+    final String location = "." + File.separatorChar + "bin";
     private DownloadManager downloadManager;
 
     @Rule
