@@ -28,13 +28,6 @@ task libJar(type: Jar) {
 
 build.dependsOn(['libJar'])
 
-test {
-    testLogging {
-        events "failed"
-        exceptionFormat "short"
-    }
-}
-
 repositories {
     mavenCentral()
 }
