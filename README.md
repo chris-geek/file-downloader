@@ -144,6 +144,6 @@ If you are downloading large files, you might consider using a larger buffer.
 
 ### Other
 
-The downloader will always overwrite the local file. Thus, it is responsibility of the client application to check,
+IMPORTANT: The downloader will always overwrite the local file. Thus, it is responsibility of the client application to check,
 before downloading, that there is not another file with the same name on the local disk.
 
